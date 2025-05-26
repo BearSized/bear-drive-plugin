@@ -1,11 +1,10 @@
-
 openapi: 3.1.0
 info:
   title: Bear Drive API
   version: "1.0.0"
   description: API for accessing and managing Google Drive files via a service account.
 servers:
-  - url: https://bear-drive.up.railway.app/api
+  - url: https://bear-drive-plugin-production.up.railway.app/api
 paths:
   /list-files:
     get:

@@ -1,29 +1,43 @@
-
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const { listFiles, uploadFile } = require('./drive');
 const path = require('path');
+const { listFiles, uploadFile } = require('./drive');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 
+// Middleware
 app.use(cors());
 app.use(express.json());
-app.use('/.well-known', express.static(path.join(__dirname, '.well-known')));
-app.use('/', express.static(__dirname));
 
+// ✅ Serve the plugin manifest and OpenAPI schema
+app.use('/.well-known', express.static(path.join(__dirname, '.well-known')));
+app.use('/', express.static(__dirname)); // this serves openapi.yaml at root
+
+// 🔗 GPT Action Endpoints
 app.get('/api/list-files', async (req, res) => {
-  const files = await listFiles();
-  res.json({ files });
+  try {
+    const files = await listFiles();
+    res.json({ files });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to list files', details: err.message });
+  }
 });
 
 app.post('/api/upload-file', upload.single('file'), async (req, res) => {
-  const { originalname, path: tempPath } = req.file;
-  const { parentId } = req.body;
-  const fileId = await uploadFile(tempPath, originalname, parentId);
-  res.json({ fileId });
+  try {
+    const { originalname, path: tempPath } = req.file;
+    const { parentId } = req.body;
+    const fileId = await uploadFile(tempPath, originalname, parentId);
+    res.json({ fileId });
+  } catch (err) {
+    res.status(500).json({ error: 'Upload failed', details: err.message });
+  }
 });
 
+// ✅ Start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🦄 Bear Drive API running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🦄 Bear Drive API running at http://localhost:${PORT}`);
+});

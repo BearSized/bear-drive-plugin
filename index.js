@@ -7,13 +7,12 @@ const { listFiles, uploadFile } = require('./drive');
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// ✅ Serve the plugin manifest and OpenAPI schema
-app.use('/.well-known', express.static(path.join(__dirname, '.well-known')));
-app.use('/', express.static(__dirname)); // this serves openapi.yaml at root
+// ✅ Serve `well-known` at the expected GPT path `/.well-known`
+app.use('/.well-known', express.static(path.join(__dirname, 'well-known')));
+app.use('/', express.static(__dirname)); // for openapi.yaml
 
 // 🔗 GPT Action Endpoints
 app.get('/api/list-files', async (req, res) => {

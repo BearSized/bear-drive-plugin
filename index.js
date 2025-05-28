@@ -142,3 +142,15 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🦄 Bear Drive API running at http://localhost:${PORT}`);
 });
+
+const { exportGoogleDoc } = require('./googleDocsSheets');
+
+app.get('/api/export-doc/:fileId', async (req, res) => {
+  try {
+    const { fileId } = req.params;
+    const docContent = await exportGoogleDoc(fileId);
+    res.send(docContent);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to export document', details: err.message });
+  }
+});

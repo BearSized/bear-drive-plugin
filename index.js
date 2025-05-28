@@ -18,7 +18,8 @@ const {
   createSheet,
   writeToSheet,
   readFromSheet,
-  createDoc
+  createGoogleDoc,
+  exportGoogleDoc
 } = require('./googleDocsSheets'); // ✅ Combined module for Sheets and Docs
 
 const app = express();
@@ -131,19 +132,12 @@ app.get('/api/read-sheet', async (req, res) => {
 app.post('/api/create-doc', async (req, res) => {
   try {
     const { title } = req.body;
-    const docId = await createDoc(title);
-    res.json({ docId });
+    const doc = await createGoogleDoc(title);
+    res.json({ docId: doc.documentId });
   } catch (err) {
     res.status(500).json({ error: 'Failed to create doc', details: err.message });
   }
 });
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🦄 Bear Drive API running at http://localhost:${PORT}`);
-});
-
-const { exportGoogleDoc } = require('./googleDocsSheets');
 
 app.get('/api/export-doc/:fileId', async (req, res) => {
   try {
@@ -153,4 +147,9 @@ app.get('/api/export-doc/:fileId', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Failed to export document', details: err.message });
   }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🦄 Bear Drive API running at http://localhost:${PORT}`);
 });

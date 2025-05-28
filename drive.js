@@ -21,7 +21,11 @@ const drive = google.drive({ version: 'v3', auth });
 async function listFiles() {
   const res = await drive.files.list({
     pageSize: 100,
-    fields: 'files(id, name)',
+    fields: 'files(id, name, driveId, parents)',
+    driveId: '0AFk-zoIrXU2KUk9PVA',
+    corpora: 'drive',
+    includeItemsFromAllDrives: true,
+    supportsAllDrives: true,
   });
   return res.data.files;
 }

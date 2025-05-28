@@ -19,6 +19,31 @@ async function writeToDoc(docId, content) {
   });
 }
 
+const { google } = require('googleapis');
+const auth = require('./auth');
+
+async function exportGoogleDoc(fileId, mimeType = 'text/plain') {
+  const client = await auth.getClient();
+  const drive = google.drive({ version: 'v3', auth: client });
+
+  const res = await drive.files.export({
+    fileId,
+    mimeType
+  }, { responseType: 'stream' });
+
+  return new Promise((resolve, reject) => {
+    let data = '';
+    res.data.on('data', chunk => data += chunk);
+    res.data.on('end', () => resolve(data));
+    res.data.on('error', reject);
+  });
+}
+
+module.exports = {
+  ...module.exports, // keep existing exports like createDoc/createSheet
+  exportGoogleDoc
+};
+
 // Create a new Google Sheet
 async function createGoogleSheet(title) {
   const sheets = google.sheets({ version: 'v4', auth });

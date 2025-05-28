@@ -1,8 +1,8 @@
-openapi: 3.1.0
+ openapi: 3.1.0
 info:
   title: Bear Drive API
   version: "1.0.0"
-  description: API for accessing and managing Google Drive files via a service account.
+  description: API for accessing and managing Google Drive, Docs, and Sheets via a service account.
 servers:
   - url: https://bear-drive-plugin-production.up.railway.app/api
 paths:
@@ -27,6 +27,7 @@ paths:
                           type: string
                         name:
                           type: string
+
   /upload-file:
     post:
       operationId: uploadFile
@@ -53,5 +54,54 @@ paths:
                 properties:
                   fileId:
                     type: string
+
+  /create-doc:
+    post:
+      operationId: createDoc
+      summary: Create a new Google Doc
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+      responses:
+        '200':
+          description: Doc created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  docId:
+                    type: string
+
+  /create-sheet:
+    post:
+      operationId: createSheet
+      summary: Create a new Google Sheet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+      responses:
+        '200':
+          description: Sheet created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sheetId:
+                    type: string
+
 components:
   schemas: {}

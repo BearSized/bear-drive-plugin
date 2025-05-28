@@ -94,6 +94,46 @@ app.post('/api/share-file', async (req, res) => {
   }
 });
 
+
+// Google sheets
+
+
+const { createSheet, writeToSheet, readFromSheet } = require('./sheets');
+
+app.post('/api/create-sheet', async (req, res) => {
+  try {
+    const { title } = req.body;
+    const spreadsheetId = await createSheet(title);
+    res.json({ spreadsheetId });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create sheet', details: err.message });
+  }
+});
+
+app.post('/api/write-sheet', async (req, res) => {
+  try {
+    const { spreadsheetId, range, values } = req.body;
+    await writeToSheet(spreadsheetId, range, values);
+    res.json({ message: 'Data written successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to write to sheet', details: err.message });
+  }
+});
+
+app.get('/api/read-sheet', async (req, res) => {
+  try {
+    const { spreadsheetId, range } = req.query;
+    const values = await readFromSheet(spreadsheetId, range);
+    res.json({ values });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to read from sheet', details: err.message });
+  }
+});
+
+
+
+
+
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

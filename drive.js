@@ -2,16 +2,23 @@ const { google } = require('googleapis');
 const fs = require('fs');
 const path = require('path');
 
-// ✅ Safely load and parse service account credentials
-if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
-  throw new Error("Missing GOOGLE_SERVICE_ACCOUNT_JSON environment variable.");
+// ✅ Load base64-encoded credentials from environment
+const b64 = process.env.GOOGLE_SERVICE_ACCOUNT_B64;
+if (!b64) {
+  throw new Error("Missing GOOGLE_SERVICE_ACCOUNT_B64 environment variable.");
 }
 
 let serviceAccount;
 try {
-  serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+  const jsonString = Buffer.from(b64, 'base64').toString('utf8');
+  serviceAccount = JSON.parse(jsonString);
+
+  // 🔥 Fix escaped newlines in private key
+  if (serviceAccount.private_key) {
+    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+  }
 } catch (err) {
-  throw new Error("Invalid JSON in GOOGLE_SERVICE_ACCOUNT_JSON: " + err.message);
+  throw new Error("Invalid base64 or JSON in GOOGLE_SERVICE_ACCOUNT_B64: " + err.message);
 }
 
 const auth = new google.auth.GoogleAuth({

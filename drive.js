@@ -2,8 +2,17 @@ const { google } = require('googleapis');
 const fs = require('fs');
 const path = require('path');
 
-// ✅ Load credentials from env var as JSON
-const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+// ✅ Safely load and parse service account credentials
+if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+  throw new Error("Missing GOOGLE_SERVICE_ACCOUNT_JSON environment variable.");
+}
+
+let serviceAccount;
+try {
+  serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+} catch (err) {
+  throw new Error("Invalid JSON in GOOGLE_SERVICE_ACCOUNT_JSON: " + err.message);
+}
 
 const auth = new google.auth.GoogleAuth({
   credentials: serviceAccount,

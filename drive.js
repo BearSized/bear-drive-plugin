@@ -31,21 +31,27 @@ async function listFiles() {
 }
 
 // Upload file
-async function uploadFile(filePath, fileName, parentId) {
+const uploadFile = async (filePath, fileName, parentId) => {
   const fileMetadata = {
     name: fileName,
-    parents: parentId ? [parentId] : [],
+    // 👇 Specify the destination folder in the shared drive
+    parents: parentId ? [parentId] : undefined,
   };
+
   const media = {
     body: fs.createReadStream(filePath),
   };
+
   const res = await drive.files.create({
     resource: fileMetadata,
-    media: media,
+    media,
     fields: 'id',
+    // 👇 These flags ensure shared drive compatibility
+    supportsAllDrives: true,
   });
+
   return res.data.id;
-}
+};
 
 // Download file
 async function downloadFile(fileId, destPath) {

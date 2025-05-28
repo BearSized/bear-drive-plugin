@@ -3,6 +3,8 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+require('dotenv').config();
+
 const {
   listFiles,
   uploadFile,
@@ -12,7 +14,12 @@ const {
   shareFile,
 } = require('./drive');
 
-require('dotenv').config();
+const {
+  createSheet,
+  writeToSheet,
+  readFromSheet,
+  createDoc
+} = require('./googleDocsSheets'); // ✅ Combined module for Sheets and Docs
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
@@ -20,11 +27,11 @@ const upload = multer({ dest: 'uploads/' });
 app.use(cors());
 app.use(express.json());
 
-// Serve static files
+// Static files
 app.use('/.well-known', express.static(path.join(__dirname, 'well-known')));
 app.use('/', express.static(__dirname));
 
-// List files
+// File Endpoints
 app.get('/api/list-files', async (req, res) => {
   try {
     const files = await listFiles();
@@ -34,34 +41,31 @@ app.get('/api/list-files', async (req, res) => {
   }
 });
 
-// Upload file
 app.post('/api/upload-file', upload.single('file'), async (req, res) => {
   try {
     const { originalname, path: tempPath } = req.file;
     const { parentId } = req.body;
     const fileId = await uploadFile(tempPath, originalname, parentId);
-    fs.unlinkSync(tempPath); // Clean up temp file
+    fs.unlinkSync(tempPath);
     res.json({ fileId });
   } catch (err) {
     res.status(500).json({ error: 'Upload failed', details: err.message });
   }
 });
 
-// Download file
 app.get('/api/download-file/:fileId', async (req, res) => {
   try {
     const { fileId } = req.params;
     const destPath = path.join(__dirname, 'downloads', `${fileId}`);
     await downloadFile(fileId, destPath);
     res.download(destPath, () => {
-      fs.unlinkSync(destPath); // Clean up after download
+      fs.unlinkSync(destPath);
     });
   } catch (err) {
     res.status(500).json({ error: 'Download failed', details: err.message });
   }
 });
 
-// Delete file
 app.delete('/api/delete-file/:fileId', async (req, res) => {
   try {
     const { fileId } = req.params;
@@ -72,7 +76,6 @@ app.delete('/api/delete-file/:fileId', async (req, res) => {
   }
 });
 
-// Create folder
 app.post('/api/create-folder', async (req, res) => {
   try {
     const { folderName, parentId } = req.body;
@@ -83,7 +86,6 @@ app.post('/api/create-folder', async (req, res) => {
   }
 });
 
-// Share file or folder
 app.post('/api/share-file', async (req, res) => {
   try {
     const { fileId, email } = req.body;
@@ -94,12 +96,7 @@ app.post('/api/share-file', async (req, res) => {
   }
 });
 
-
-// Google sheets
-
-
-const { createSheet, writeToSheet, readFromSheet } = require('./sheets');
-
+// Google Sheets
 app.post('/api/create-sheet', async (req, res) => {
   try {
     const { title } = req.body;
@@ -130,11 +127,17 @@ app.get('/api/read-sheet', async (req, res) => {
   }
 });
 
+// Google Docs
+app.post('/api/create-doc', async (req, res) => {
+  try {
+    const { title } = req.body;
+    const docId = await createDoc(title);
+    res.json({ docId });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create doc', details: err.message });
+  }
+});
 
-
-
-
-// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🦄 Bear Drive API running at http://localhost:${PORT}`);

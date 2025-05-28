@@ -1,14 +1,14 @@
 const { google } = require('googleapis');
 const auth = require('./auth');
 
-// Create a new Google Doc
+// ✅ Create a new Google Doc
 async function createGoogleDoc(title) {
   const docs = google.docs({ version: 'v1', auth });
   const res = await docs.documents.create({ requestBody: { title } });
   return res.data;
 }
 
-// Write content to a Google Doc
+// ✅ Write content to a Google Doc
 async function writeToDoc(docId, content) {
   const docs = google.docs({ version: 'v1', auth });
   await docs.documents.batchUpdate({
@@ -19,17 +19,15 @@ async function writeToDoc(docId, content) {
   });
 }
 
-const { google } = require('googleapis');
-const auth = require('./auth');
-
+// ✅ Export a Google Doc (as plain text or other supported formats)
 async function exportGoogleDoc(fileId, mimeType = 'text/plain') {
   const client = await auth.getClient();
   const drive = google.drive({ version: 'v3', auth: client });
 
-  const res = await drive.files.export({
-    fileId,
-    mimeType
-  }, { responseType: 'stream' });
+  const res = await drive.files.export(
+    { fileId, mimeType },
+    { responseType: 'stream' }
+  );
 
   return new Promise((resolve, reject) => {
     let data = '';
@@ -39,19 +37,16 @@ async function exportGoogleDoc(fileId, mimeType = 'text/plain') {
   });
 }
 
-module.exports = {
-  ...module.exports, // keep existing exports like createDoc/createSheet
-  exportGoogleDoc
-};
-
-// Create a new Google Sheet
+// ✅ Create a new Google Sheet
 async function createGoogleSheet(title) {
   const sheets = google.sheets({ version: 'v4', auth });
-  const res = await sheets.spreadsheets.create({ requestBody: { properties: { title } } });
+  const res = await sheets.spreadsheets.create({
+    requestBody: { properties: { title } }
+  });
   return res.data;
 }
 
-// Append data to a Sheet
+// ✅ Append data to a Google Sheet
 async function appendToSheet(sheetId, range, values) {
   const sheets = google.sheets({ version: 'v4', auth });
   await sheets.spreadsheets.values.append({
@@ -62,9 +57,11 @@ async function appendToSheet(sheetId, range, values) {
   });
 }
 
+// ✅ Export all functions
 module.exports = {
   createGoogleDoc,
   writeToDoc,
+  exportGoogleDoc,
   createGoogleSheet,
   appendToSheet
 };

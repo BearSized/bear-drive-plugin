@@ -12,14 +12,16 @@ const sheets = google.sheets({ version: "v4", auth });
 const docs = google.docs({ version: "v1", auth });
 
 // DRIVE
-app.get("/api/list-files", async (req, res) => {
-  try {
-    const files = await listFiles();
-    res.json({ files });
-  } catch (error) {
-    res.status(500).send(error.message);
-  }
-});
+async function listFiles() {
+  const res = await drive.files.list({
+    pageSize: 100,
+    fields: "files(id, name, mimeType, parents)",
+    q: "trashed = false",
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true
+  });
+  return res.data.files;
+}
 
 async function createFolder(name, parentId) {
   const fileMetadata = {
@@ -169,5 +171,7 @@ module.exports = {
   readFromSheet,
   createDoc,
   updateDocContent,
-  listSharedDrives
+  listSharedDrives,
+  checkFileExists,
+  checkMultipleFiles
 };

@@ -42,6 +42,16 @@ async function createGoogleSheet(title) {
   return res.data;
 }
 
+app.post('/api/create-sheet-in-folder', async (req, res) => {
+  try {
+    const { title, parentFolderId } = req.body;
+    const sheet = await createSheet(title, parentFolderId);
+    res.json({ spreadsheetId: sheet.spreadsheetId, url: sheet.spreadsheetUrl });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create sheet in folder', details: err.message });
+  }
+});
+
 async function appendToSheet(sheetId, range, values) {
   const sheets = google.sheets({ version: 'v4', auth });
   await sheets.spreadsheets.values.append({

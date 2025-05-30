@@ -1,7 +1,13 @@
 const { google } = require("googleapis");
 const auth = require("./auth");
 
-const drive = google.drive({ version: "v3", auth });
+const drive = google.drive({
+  version: "v3",
+  auth,
+  params: {
+    supportsAllDrives: true
+  }
+});
 const sheets = google.sheets({ version: "v4", auth });
 const docs = google.docs({ version: "v1", auth });
 
@@ -10,7 +16,8 @@ async function listFiles() {
   const res = await drive.files.list({
     pageSize: 100,
     fields: "files(id, name, mimeType, parents)",
-    q: "trashed = false"
+    q: "trashed = false",
+    supportsAllDrives: true
   });
   return res.data.files;
 }
@@ -21,23 +28,32 @@ async function createFolder(name, parentId) {
     mimeType: "application/vnd.google-apps.folder",
     parents: parentId ? [parentId] : []
   };
-  const res = await drive.files.create({ resource: fileMetadata, fields: "id, name" });
+  const res = await drive.files.create({
+    resource: fileMetadata,
+    fields: "id, name",
+    supportsAllDrives: true
+  });
   return res.data;
 }
 
 async function deleteFile(fileId) {
-  await drive.files.delete({ fileId });
+  await drive.files.delete({ fileId, supportsAllDrives: true });
   return "File deleted successfully";
 }
 
 async function moveFileToFolder(fileId, folderId) {
-  const file = await drive.files.get({ fileId, fields: "parents" });
+  const file = await drive.files.get({
+    fileId,
+    fields: "parents",
+    supportsAllDrives: true
+  });
   const previousParents = file.data.parents.join(",");
   const res = await drive.files.update({
     fileId,
     addParents: folderId,
     removeParents: previousParents,
-    fields: "id, parents"
+    fields: "id, parents",
+    supportsAllDrives: true
   });
   return res.data;
 }
@@ -50,7 +66,8 @@ async function shareFile(fileId, email) {
       role: "writer",
       emailAddress: email
     },
-    fields: "id"
+    fields: "id",
+    supportsAllDrives: true
   });
   return "File shared with " + email;
 }
@@ -61,7 +78,8 @@ async function addLabelsToFile(fileId, labels) {
     resource: {
       properties: labels
     },
-    fields: "id, properties"
+    fields: "id, properties",
+    supportsAllDrives: true
   });
   return res.data;
 }

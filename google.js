@@ -14,15 +14,13 @@ const docs = google.docs({ version: "v1", auth });
 
 async function listFiles() {
   const res = await drive.files.list({
-    pageSize: 100,
-    fields: "files(id, name, mimeType, parents, trashed)",
     q: "trashed = false",
+    fields: "files(id, name, mimeType)",
     supportsAllDrives: true,
     includeItemsFromAllDrives: true
   });
   return res.data.files;
 }
-
 async function createFolder(name, parentId) {
   const fileMetadata = {
     name,

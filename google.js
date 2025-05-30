@@ -12,15 +12,13 @@ const sheets = google.sheets({ version: "v4", auth });
 const docs = google.docs({ version: "v1", auth });
 
 // DRIVE
-async function listFiles() {
-  const res = await drive.files.list({
-    pageSize: 100,
-    fields: "files(id, name, mimeType, parents)",
-    q: "trashed = false",
-    supportsAllDrives: true
-  });
-  return res.data.files;
-}
+const res = await drive.files.list({
+  pageSize: 100,
+  fields: "files(id, name, mimeType, parents)",
+  q: "'0AJHu2oOZaS13Uk9PVA' in parents and trashed = false",
+  supportsAllDrives: true,
+  includeItemsFromAllDrives: true
+});
 
 async function createFolder(name, parentId) {
   const fileMetadata = {

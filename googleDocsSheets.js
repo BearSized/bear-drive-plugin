@@ -52,6 +52,33 @@ async function appendToSheet(sheetId, range, values) {
   });
 }
 
+async function createGoogleSheet(title, parentFolderId = null) {
+  const sheets = google.sheets({ version: 'v4', auth });
+  const drive = google.drive({ version: 'v3', auth });
+
+  // Step 1: Create the sheet
+  const sheetRes = await sheets.spreadsheets.create({
+    requestBody: {
+      properties: { title }
+    }
+  });
+
+  const sheetId = sheetRes.data.spreadsheetId;
+
+  // Step 2: Move it to the correct folder if parent specified
+  if (parentFolderId) {
+    await drive.files.update({
+      fileId: sheetId,
+      addParents: parentFolderId,
+      removeParents: 'root',
+      fields: 'id, parents',
+      supportsAllDrives: true
+    });
+  }
+
+  return sheetRes.data;
+}
+
 module.exports = {
   createGoogleDoc,
   writeToDoc,

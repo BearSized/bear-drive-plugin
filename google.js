@@ -7,7 +7,11 @@ const docs = google.docs({ version: "v1", auth });
 
 // DRIVE
 async function listFiles() {
-  const res = await drive.files.list({ pageSize: 100, fields: "files(id, name, mimeType, parents)" });
+  const res = await drive.files.list({
+    pageSize: 100,
+    fields: "files(id, name, mimeType, parents)",
+    q: "trashed = false"
+  });
   return res.data.files;
 }
 

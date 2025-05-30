@@ -136,6 +136,15 @@ router.post("/addLabels", async (req, res) => {
   }
 });
 
+app.get("/api/listSharedDrives", async (req, res) => {
+  try {
+    const drives = await listSharedDrives();
+    res.json({ drives });
+  } catch (err) {
+    res.status(500).send("Error listing shared drives: " + err.message);
+  }
+});
+
 // Mount all API routes under /api
 app.use("/api", router);
 

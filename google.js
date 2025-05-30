@@ -84,6 +84,13 @@ async function addLabelsToFile(fileId, labels) {
   return res.data;
 }
 
+async function listSharedDrives() {
+  const res = await drive.drives.list({
+    pageSize: 100
+  });
+  return res.data.drives;
+}
+
 // SHEETS
 async function createSheet(title) {
   const resource = { properties: { title } };
@@ -140,5 +147,6 @@ module.exports = {
   writeToSheet,
   readFromSheet,
   createDoc,
-  updateDocContent
+  updateDocContent,
+  listSharedDrives
 };

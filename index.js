@@ -136,6 +136,13 @@ router.post("/addLabels", async (req, res) => {
   }
 });
 
+// Mount all API routes under /api
+app.use("/api", router);
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
 app.get("/api/listSharedDrives", async (req, res) => {
   try {
     const drives = await listSharedDrives();
@@ -145,8 +152,5 @@ app.get("/api/listSharedDrives", async (req, res) => {
   }
 });
 
-// Mount all API routes under /api
-app.use("/api", router);
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+module.exports = app;

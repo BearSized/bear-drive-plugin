@@ -152,5 +152,14 @@ app.get("/api/listSharedDrives", async (req, res) => {
   }
 });
 
+const { listFiles, checkMultipleFiles } = require("./google");
+
+app.get("/api/validate-files", async (req, res) => {
+  const files = await listFiles();
+  const fileIds = files.map(f => f.id);
+  const checks = await checkMultipleFiles(fileIds);
+  res.json(checks);
+});
+
 
 module.exports = app;

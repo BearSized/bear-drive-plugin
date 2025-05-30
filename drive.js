@@ -17,13 +17,13 @@ const auth = new google.auth.JWT(
 
 const drive = google.drive({ version: 'v3', auth });
 
-// List files
-async function listFiles() {
+// List files in a specific shared drive
+async function listFiles(driveId = '0AFk-zoIrXU2KUk9PVA') {
   const res = await drive.files.list({
     q: 'trashed = false',
     pageSize: 100,
     fields: 'files(id, name, driveId, parents)',
-    driveId: '0AFk-zoIrXU2KUk9PVA',
+    driveId,
     corpora: 'drive',
     includeItemsFromAllDrives: true,
     supportsAllDrives: true,
@@ -31,11 +31,10 @@ async function listFiles() {
   return res.data.files;
 }
 
-// Upload file
-const uploadFile = async (filePath, fileName, parentId) => {
+// Upload file to shared drive
+const uploadFile = async (filePath, fileName, parentId = null) => {
   const fileMetadata = {
     name: fileName,
-    // 👇 Specify the destination folder in the shared drive
     parents: parentId ? [parentId] : undefined,
   };
 
@@ -47,14 +46,13 @@ const uploadFile = async (filePath, fileName, parentId) => {
     resource: fileMetadata,
     media,
     fields: 'id',
-    // 👇 These flags ensure shared drive compatibility
     supportsAllDrives: true,
   });
 
   return res.data.id;
 };
 
-// Download file
+// Download file by ID
 async function downloadFile(fileId, destPath) {
   const dest = fs.createWriteStream(destPath);
   const res = await drive.files.get(
@@ -69,45 +67,34 @@ async function downloadFile(fileId, destPath) {
   });
 }
 
-// Delete file
+// Delete file by ID
 async function deleteFile(fileId) {
-  await drive.files.delete({ fileId });
-}
-
-// Create folder
-async function createFolder(folderName, parentId) {
-  const fileMetadata = {
-    name: folderName,
-    mimeType: 'application/vnd.google-apps.folder',
-    parents: parentId ? [parentId] : [],
-  };
-  const res = await drive.files.create({
-    resource: fileMetadata,
-    fields: 'id',
+  await drive.files.delete({
+    fileId,
+    supportsAllDrives: true,
   });
-  return res.data.id;
 }
 
-// Create folder in Shared Drive
-async function createFolder(folderName, parentId = null) {
+// Create a folder in shared drive
+async function createFolder(folderName, parentId = null, driveId = '0AFk-zoIrXU2KUk9PVA') {
   const fileMetadata = {
     name: folderName,
     mimeType: 'application/vnd.google-apps.folder',
     parents: parentId ? [parentId] : undefined,
-    driveId: '0AFk-zoIrXU2KUk9PVA', // Your Shared Drive ID
   };
 
   const res = await drive.files.create({
     resource: fileMetadata,
     fields: 'id',
     supportsAllDrives: true,
+    driveId,
     includeItemsFromAllDrives: true,
   });
 
   return res.data.id;
 }
 
-// Share file or folder
+// Share file or folder with a user
 async function shareFile(fileId, email) {
   const permissions = {
     type: 'user',
@@ -118,6 +105,7 @@ async function shareFile(fileId, email) {
     fileId: fileId,
     resource: permissions,
     fields: 'id',
+    supportsAllDrives: true,
   });
 }
 

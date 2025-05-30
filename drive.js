@@ -88,6 +88,25 @@ async function createFolder(folderName, parentId) {
   return res.data.id;
 }
 
+// Create folder in Shared Drive
+async function createFolder(folderName, parentId = null) {
+  const fileMetadata = {
+    name: folderName,
+    mimeType: 'application/vnd.google-apps.folder',
+    parents: parentId ? [parentId] : undefined,
+    driveId: '0AFk-zoIrXU2KUk9PVA', // Your Shared Drive ID
+  };
+
+  const res = await drive.files.create({
+    resource: fileMetadata,
+    fields: 'id',
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
+  });
+
+  return res.data.id;
+}
+
 // Share file or folder
 async function shareFile(fileId, email) {
   const permissions = {

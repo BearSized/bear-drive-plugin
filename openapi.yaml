@@ -1,0 +1,216 @@
+openapi: 3.1.0
+info:
+  title: Bear Drive API
+  version: "1.0.0"
+  description: API for accessing and managing Google Drive, Docs, and Sheets via a service account.
+servers:
+  - url: https://bear-drive-plugin-production.up.railway.app/api
+paths:
+  /listFiles:
+    get:
+      operationId: listFiles
+      summary: List files
+      responses:
+        '200':
+          description: A list of files
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  files:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+  /createFolder:
+    post:
+      operationId: createFolder
+      summary: Create a folder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                folderName:
+                  type: string
+                parentId:
+                  type: string
+      responses:
+        '200':
+          description: Folder created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  folder:
+                    type: object
+  /deleteFile:
+    post:
+      operationId: deleteFile
+      summary: Delete a file
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fileId:
+                  type: string
+      responses:
+        '200':
+          description: File deleted
+  /moveFile:
+    post:
+      operationId: moveFile
+      summary: Move a file to a folder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fileId:
+                  type: string
+                folderId:
+                  type: string
+      responses:
+        '200':
+          description: File moved
+  /shareFile:
+    post:
+      operationId: shareFile
+      summary: Share a file with an email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fileId:
+                  type: string
+                email:
+                  type: string
+      responses:
+        '200':
+          description: File shared
+  /createSheet:
+    post:
+      operationId: createSheet
+      summary: Create a new Google Sheet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+      responses:
+        '200':
+          description: Sheet created
+  /writeToSheet:
+    post:
+      operationId: writeToSheet
+      summary: Write values to a sheet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                spreadsheetId:
+                  type: string
+                range:
+                  type: string
+                values:
+                  type: array
+                  items:
+                    type: array
+                    items:
+                      type: string
+      responses:
+        '200':
+          description: Sheet updated
+  /readFromSheet:
+    post:
+      operationId: readFromSheet
+      summary: Read values from a sheet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                spreadsheetId:
+                  type: string
+                range:
+                  type: string
+      responses:
+        '200':
+          description: Sheet values
+  /createDoc:
+    post:
+      operationId: createDoc
+      summary: Create a Google Doc
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+      responses:
+        '200':
+          description: Doc created
+  /updateDocContent:
+    post:
+      operationId: updateDocContent
+      summary: Update Google Doc content
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                docId:
+                  type: string
+                content:
+                  type: string
+      responses:
+        '200':
+          description: Doc updated
+  /addLabels:
+    post:
+      operationId: addLabels
+      summary: Add labels/tags to a file
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fileId:
+                  type: string
+                labels:
+                  type: object
+      responses:
+        '200':
+          description: Labels added

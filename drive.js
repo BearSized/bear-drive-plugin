@@ -20,6 +20,7 @@ const drive = google.drive({ version: 'v3', auth });
 // List files
 async function listFiles() {
   const res = await drive.files.list({
+    q: 'trashed = false',
     pageSize: 100,
     fields: 'files(id, name, driveId, parents)',
     driveId: '0AFk-zoIrXU2KUk9PVA',

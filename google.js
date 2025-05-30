@@ -137,6 +137,28 @@ async function updateDocContent(docId, content) {
   return res.data;
 }
 
+async function checkFileExists(fileId) {
+  try {
+    const file = await drive.files.get({
+      fileId,
+      fields: 'id, name',
+      supportsAllDrives: true
+    });
+    return { fileId, exists: true, name: file.data.name };
+  } catch (error) {
+    return { fileId, exists: false, error: error.message };
+  }
+}
+
+async function checkMultipleFiles(fileIds) {
+  const results = [];
+  for (const id of fileIds) {
+    const result = await checkFileExists(id);
+    results.push(result);
+  }
+  return results;
+}
+
 module.exports = {
   listFiles,
   createFolder,

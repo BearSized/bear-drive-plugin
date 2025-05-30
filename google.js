@@ -1,3 +1,4 @@
+// FILE: google.js
 const { google } = require("googleapis");
 const auth = require("./auth");
 
@@ -11,11 +12,10 @@ const drive = google.drive({
 const sheets = google.sheets({ version: "v4", auth });
 const docs = google.docs({ version: "v1", auth });
 
-// DRIVE
 async function listFiles() {
   const res = await drive.files.list({
     pageSize: 100,
-    fields: "files(id, name, mimeType, parents)",
+    fields: "files(id, name, mimeType, parents, trashed)",
     q: "trashed = false",
     supportsAllDrives: true,
     includeItemsFromAllDrives: true
@@ -60,7 +60,7 @@ async function moveFileToFolder(fileId, folderId) {
 }
 
 async function shareFile(fileId, email) {
-  const res = await drive.permissions.create({
+  await drive.permissions.create({
     fileId,
     resource: {
       type: "user",
@@ -86,13 +86,10 @@ async function addLabelsToFile(fileId, labels) {
 }
 
 async function listSharedDrives() {
-  const res = await drive.drives.list({
-    pageSize: 100
-  });
+  const res = await drive.drives.list({ pageSize: 100 });
   return res.data.drives;
 }
 
-// SHEETS
 async function createSheet(title) {
   const resource = { properties: { title } };
   const res = await sheets.spreadsheets.create({ resource });
@@ -114,7 +111,6 @@ async function readFromSheet(spreadsheetId, range) {
   return res.data.values;
 }
 
-// DOCS
 async function createDoc(title) {
   const res = await docs.documents.create({ requestBody: { title } });
   return res.data;
@@ -141,7 +137,7 @@ async function checkFileExists(fileId) {
   try {
     const file = await drive.files.get({
       fileId,
-      fields: 'id, name',
+      fields: "id, name",
       supportsAllDrives: true
     });
     return { fileId, exists: true, name: file.data.name };

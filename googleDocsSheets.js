@@ -40,7 +40,6 @@ async function createGoogleSheet(title, parentFolderId = null) {
   const sheets = google.sheets({ version: 'v4', auth });
   const drive = google.drive({ version: 'v3', auth });
 
-  // Step 1: Create the sheet
   const sheetRes = await sheets.spreadsheets.create({
     requestBody: {
       properties: { title }
@@ -49,7 +48,6 @@ async function createGoogleSheet(title, parentFolderId = null) {
 
   const sheetId = sheetRes.data.spreadsheetId;
 
-  // Step 2: Move to correct folder if needed
   if (parentFolderId) {
     await drive.files.update({
       fileId: sheetId,
@@ -96,8 +94,8 @@ module.exports = {
   createGoogleDoc,
   writeToDoc,
   exportGoogleDoc,
-  createGoogleSheet,              // For use with shared folder logic
-  createSheet: createGoogleSheet, // For existing routes using createSheet
+  createGoogleSheet,
+  createSheet: createGoogleSheet,
   writeToSheet,
   readFromSheet,
   appendToSheet

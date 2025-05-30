@@ -36,32 +36,6 @@ async function exportGoogleDoc(fileId, mimeType = 'text/plain') {
 }
 
 // Google Sheets
-async function createGoogleSheet(title) {
-  const sheets = google.sheets({ version: 'v4', auth });
-  const res = await sheets.spreadsheets.create({ requestBody: { properties: { title } } });
-  return res.data;
-}
-
-app.post('/api/create-sheet-in-folder', async (req, res) => {
-  try {
-    const { title, parentFolderId } = req.body;
-    const sheet = await createSheet(title, parentFolderId);
-    res.json({ spreadsheetId: sheet.spreadsheetId, url: sheet.spreadsheetUrl });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to create sheet in folder', details: err.message });
-  }
-});
-
-async function appendToSheet(sheetId, range, values) {
-  const sheets = google.sheets({ version: 'v4', auth });
-  await sheets.spreadsheets.values.append({
-    spreadsheetId: sheetId,
-    range,
-    valueInputOption: 'RAW',
-    requestBody: { values }
-  });
-}
-
 async function createGoogleSheet(title, parentFolderId = null) {
   const sheets = google.sheets({ version: 'v4', auth });
   const drive = google.drive({ version: 'v3', auth });
@@ -75,7 +49,7 @@ async function createGoogleSheet(title, parentFolderId = null) {
 
   const sheetId = sheetRes.data.spreadsheetId;
 
-  // Step 2: Move it to the correct folder if parent specified
+  // Step 2: Move to correct folder if needed
   if (parentFolderId) {
     await drive.files.update({
       fileId: sheetId,
@@ -89,12 +63,41 @@ async function createGoogleSheet(title, parentFolderId = null) {
   return sheetRes.data;
 }
 
+async function appendToSheet(sheetId, range, values) {
+  const sheets = google.sheets({ version: 'v4', auth });
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: sheetId,
+    range,
+    valueInputOption: 'RAW',
+    requestBody: { values }
+  });
+}
+
+async function writeToSheet(spreadsheetId, range, values) {
+  const sheets = google.sheets({ version: 'v4', auth });
+  await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range,
+    valueInputOption: 'RAW',
+    requestBody: { values }
+  });
+}
+
+async function readFromSheet(spreadsheetId, range) {
+  const sheets = google.sheets({ version: 'v4', auth });
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range
+  });
+  return res.data.values;
+}
+
 module.exports = {
   createGoogleDoc,
   writeToDoc,
   exportGoogleDoc,
-  createGoogleSheet, // ← used by /create-sheet-in-folder
-  createSheet: createGoogleSheet, // ← backward compatible for old route
+  createGoogleSheet,              // For use with shared folder logic
+  createSheet: createGoogleSheet, // For existing routes using createSheet
   writeToSheet,
   readFromSheet,
   appendToSheet

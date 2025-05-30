@@ -109,6 +109,29 @@ async function shareFile(fileId, email) {
   });
 }
 
+async function moveFileToFolder(fileId, targetFolderId) {
+  const file = await drive.files.get({
+    fileId,
+    fields: 'parents',
+    supportsAllDrives: true,
+  });
+
+  const previousParents = file.data.parents.join(',');
+
+  const res = await drive.files.update({
+    fileId,
+    addParents: targetFolderId,
+    removeParents: previousParents,
+    fields: 'id, parents',
+    supportsAllDrives: true,
+  });
+
+  return res.data;
+}
+
+// Example usage
+moveFileToFolder('1QyyO3DPIQ6V-O3cjsMVgFnJd90_SkhOTkgfHIf7-Jv4', '10oC82CAODfzfYhnpJfPgtpZd22TMAEbX');
+
 module.exports = {
   listFiles,
   uploadFile,

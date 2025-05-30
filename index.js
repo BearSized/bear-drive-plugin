@@ -1,165 +1,107 @@
 const express = require("express");
-const bodyParser = require("body-parser");
 const cors = require("cors");
+const bodyParser = require("body-parser");
 const {
   listFiles,
   createFolder,
   deleteFile,
   moveFileToFolder,
   shareFile,
+  addLabelsToFile,
   createSheet,
   writeToSheet,
   readFromSheet,
   createDoc,
   updateDocContent,
-  addLabelsToFile
+  listSharedDrives,
+  checkFileExists,
+  checkMultipleFiles
 } = require("./google");
 
 const app = express();
-const router = express.Router();
+const PORT = process.env.PORT || 3000;
+
 app.use(cors());
 app.use(bodyParser.json());
 
-// Health check
-app.get("/", (req, res) => res.send("Bear Drive Plugin is up and running!"));
-
-// DRIVE ROUTES
-router.get("/listFiles", async (req, res) => {
-  try {
-    const files = await listFiles();
-    res.json({ files });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.post("/createFolder", async (req, res) => {
-  try {
-    const { folderName, parentId } = req.body;
-    const folder = await createFolder(folderName, parentId);
-    res.json({ folder });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.post("/deleteFile", async (req, res) => {
-  try {
-    const { fileId } = req.body;
-    const message = await deleteFile(fileId);
-    res.json({ message });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.post("/moveFile", async (req, res) => {
-  try {
-    const { fileId, folderId } = req.body;
-    const result = await moveFileToFolder(fileId, folderId);
-    res.json({ result });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.post("/shareFile", async (req, res) => {
-  try {
-    const { fileId, email } = req.body;
-    const message = await shareFile(fileId, email);
-    res.json({ message });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// SHEETS ROUTES
-router.post("/createSheet", async (req, res) => {
-  try {
-    const { title } = req.body;
-    const sheet = await createSheet(title);
-    res.json({ sheet });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.post("/writeToSheet", async (req, res) => {
-  try {
-    const { spreadsheetId, range, values } = req.body;
-    const message = await writeToSheet(spreadsheetId, range, values);
-    res.json({ message });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.post("/readFromSheet", async (req, res) => {
-  try {
-    const { spreadsheetId, range } = req.body;
-    const data = await readFromSheet(spreadsheetId, range);
-    res.json({ data });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// DOCS ROUTES
-router.post("/createDoc", async (req, res) => {
-  try {
-    const { title } = req.body;
-    const doc = await createDoc(title);
-    res.json({ doc });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.post("/updateDocContent", async (req, res) => {
-  try {
-    const { docId, content } = req.body;
-    const result = await updateDocContent(docId, content);
-    res.json({ result });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// LABELS
-router.post("/addLabels", async (req, res) => {
-  try {
-    const { fileId, labels } = req.body;
-    const result = await addLabelsToFile(fileId, labels);
-    res.json({ result });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Mount all API routes under /api
-app.use("/api", router);
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-
-app.get("/api/listSharedDrives", async (req, res) => {
-  try {
-    const drives = await listSharedDrives();
-    res.json({ drives });
-  } catch (err) {
-    res.status(500).send("Error listing shared drives: " + err.message);
-  }
-});
-
-const { listFiles, checkMultipleFiles } = require("./google");
-
-app.get("/api/validate-files", async (req, res) => {
+// Routes
+app.get("/api/list-files", async (req, res) => {
   const files = await listFiles();
-  const fileIds = files.map(f => f.id);
-  const checks = await checkMultipleFiles(fileIds);
-  res.json(checks);
+  res.json({ files });
 });
 
+app.post("/api/create-folder", async (req, res) => {
+  const { folderName, parentId } = req.body;
+  const folder = await createFolder(folderName, parentId);
+  res.json(folder);
+});
 
-module.exports = app;
+app.delete("/api/delete-file/:fileId", async (req, res) => {
+  const { fileId } = req.params;
+  const result = await deleteFile(fileId);
+  res.json({ message: result });
+});
+
+app.post("/api/move-file", async (req, res) => {
+  const { fileId, folderId } = req.body;
+  const result = await moveFileToFolder(fileId, folderId);
+  res.json(result);
+});
+
+app.post("/api/share-file", async (req, res) => {
+  const { fileId, email } = req.body;
+  const result = await shareFile(fileId, email);
+  res.json({ message: result });
+});
+
+app.post("/api/label-file", async (req, res) => {
+  const { fileId, labels } = req.body;
+  const result = await addLabelsToFile(fileId, labels);
+  res.json(result);
+});
+
+app.post("/api/create-sheet", async (req, res) => {
+  const { title } = req.body;
+  const sheet = await createSheet(title);
+  res.json(sheet);
+});
+
+app.post("/api/write-sheet", async (req, res) => {
+  const { spreadsheetId, range, values } = req.body;
+  const result = await writeToSheet(spreadsheetId, range, values);
+  res.json({ message: result });
+});
+
+app.get("/api/read-sheet", async (req, res) => {
+  const { spreadsheetId, range } = req.query;
+  const data = await readFromSheet(spreadsheetId, range);
+  res.json({ values: data });
+});
+
+app.post("/api/create-doc", async (req, res) => {
+  const { title } = req.body;
+  const doc = await createDoc(title);
+  res.json(doc);
+});
+
+app.post("/api/update-doc", async (req, res) => {
+  const { docId, content } = req.body;
+  const result = await updateDocContent(docId, content);
+  res.json(result);
+});
+
+app.get("/api/list-shared-drives", async (req, res) => {
+  const drives = await listSharedDrives();
+  res.json({ drives });
+});
+
+app.post("/api/validate-files", async (req, res) => {
+  const { fileIds } = req.body;
+  const results = await checkMultipleFiles(fileIds);
+  res.json({ results });
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

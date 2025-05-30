@@ -24,7 +24,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Optional: Admin password check middleware
+// Admin password middleware
 function requireAdminPassword(req, res, next) {
   const { password } = req.body;
   if (password !== "BearSizedAdmin") {

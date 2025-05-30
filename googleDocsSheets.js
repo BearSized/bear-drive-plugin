@@ -83,6 +83,9 @@ module.exports = {
   createGoogleDoc,
   writeToDoc,
   exportGoogleDoc,
-  createGoogleSheet,
+  createGoogleSheet, // ← used by /create-sheet-in-folder
+  createSheet: createGoogleSheet, // ← backward compatible for old route
+  writeToSheet,
+  readFromSheet,
   appendToSheet
 };

@@ -16,11 +16,15 @@ const {
 } = require("./google");
 
 const app = express();
+const router = express.Router();
 app.use(cors());
 app.use(bodyParser.json());
 
+// Health check
+app.get("/", (req, res) => res.send("Bear Drive Plugin is up and running!"));
+
 // DRIVE ROUTES
-app.get("/listFiles", async (req, res) => {
+router.get("/listFiles", async (req, res) => {
   try {
     const files = await listFiles();
     res.json({ files });
@@ -29,7 +33,7 @@ app.get("/listFiles", async (req, res) => {
   }
 });
 
-app.post("/createFolder", async (req, res) => {
+router.post("/createFolder", async (req, res) => {
   try {
     const { folderName, parentId } = req.body;
     const folder = await createFolder(folderName, parentId);
@@ -39,7 +43,7 @@ app.post("/createFolder", async (req, res) => {
   }
 });
 
-app.post("/deleteFile", async (req, res) => {
+router.post("/deleteFile", async (req, res) => {
   try {
     const { fileId } = req.body;
     const message = await deleteFile(fileId);
@@ -49,7 +53,7 @@ app.post("/deleteFile", async (req, res) => {
   }
 });
 
-app.post("/moveFile", async (req, res) => {
+router.post("/moveFile", async (req, res) => {
   try {
     const { fileId, folderId } = req.body;
     const result = await moveFileToFolder(fileId, folderId);
@@ -59,7 +63,7 @@ app.post("/moveFile", async (req, res) => {
   }
 });
 
-app.post("/shareFile", async (req, res) => {
+router.post("/shareFile", async (req, res) => {
   try {
     const { fileId, email } = req.body;
     const message = await shareFile(fileId, email);
@@ -70,7 +74,7 @@ app.post("/shareFile", async (req, res) => {
 });
 
 // SHEETS ROUTES
-app.post("/createSheet", async (req, res) => {
+router.post("/createSheet", async (req, res) => {
   try {
     const { title } = req.body;
     const sheet = await createSheet(title);
@@ -80,7 +84,7 @@ app.post("/createSheet", async (req, res) => {
   }
 });
 
-app.post("/writeToSheet", async (req, res) => {
+router.post("/writeToSheet", async (req, res) => {
   try {
     const { spreadsheetId, range, values } = req.body;
     const message = await writeToSheet(spreadsheetId, range, values);
@@ -90,7 +94,7 @@ app.post("/writeToSheet", async (req, res) => {
   }
 });
 
-app.post("/readFromSheet", async (req, res) => {
+router.post("/readFromSheet", async (req, res) => {
   try {
     const { spreadsheetId, range } = req.body;
     const data = await readFromSheet(spreadsheetId, range);
@@ -101,7 +105,7 @@ app.post("/readFromSheet", async (req, res) => {
 });
 
 // DOCS ROUTES
-app.post("/createDoc", async (req, res) => {
+router.post("/createDoc", async (req, res) => {
   try {
     const { title } = req.body;
     const doc = await createDoc(title);
@@ -111,7 +115,7 @@ app.post("/createDoc", async (req, res) => {
   }
 });
 
-app.post("/updateDocContent", async (req, res) => {
+router.post("/updateDocContent", async (req, res) => {
   try {
     const { docId, content } = req.body;
     const result = await updateDocContent(docId, content);
@@ -121,8 +125,8 @@ app.post("/updateDocContent", async (req, res) => {
   }
 });
 
-// LABELS AND TAGGING
-app.post("/addLabels", async (req, res) => {
+// LABELS
+router.post("/addLabels", async (req, res) => {
   try {
     const { fileId, labels } = req.body;
     const result = await addLabelsToFile(fileId, labels);
@@ -132,9 +136,8 @@ app.post("/addLabels", async (req, res) => {
   }
 });
 
+// Mount all API routes under /api
+app.use("/api", router);
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-app.get("/", (req, res) => {
-  res.send("Bear Drive Plugin is up and running!");
-});
